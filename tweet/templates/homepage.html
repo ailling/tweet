@@ -1,0 +1,211 @@
+{% load static from staticfiles %}
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Bootstrap, from Twitter</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<!-- Le styles -->
+		<link href="{% static "css/bootstrap.css" %}" rel="stylesheet">
+		<style>
+			body {
+				padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+			}
+		</style>
+		<link href="{% static "css/bootstrap-responsive.css" %}" rel="stylesheet">
+
+		<link href="http://addyosmani.github.com/jquery-ui-bootstrap/css/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+
+		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+		<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<!-- Le fav and touch icons -->
+		<link rel="shortcut icon" href="../assets/ico/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
+		<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+
+		<script type="text/javascript" src="{% static "js/bootstrap.js" %}"></script>
+
+		<script type="text/javascript">
+			function sortdist(fdist) {
+				var sortable = [];
+				for (var word in fdist) {
+					sortable.push([word, fdist[word]]);
+				}
+
+				sortable.sort(function(a, b) {
+					return a[1] - b[1];
+				}).reverse();
+
+				return sortable;
+			}
+
+			var alldata = {};
+			var alltimes = [];
+			
+			function updateDisplay(dt) {
+				console.log('updating display for dt: ', dt);
+				
+				for(query in alldata){
+					
+					if(alldata.hasOwnProperty(query) && query !== 'length' && dt in alldata[query]){
+						$('.data-row', '.table-body').remove();
+						
+						for (var j = 0; j < alldata[query][dt].fdist.length; j++) {
+							var row = $('.template')
+								.clone()
+								.removeClass('template')
+								.addClass('data-row')
+								.show();
+							
+							var word = alldata[query][dt].fdist[j][0];
+							var count = alldata[query][dt].fdist[j][1];
+							
+							$('.word', row).text(word);
+							$('.frequency', row).text(count);
+							
+							$('.table-body').append(row);
+						}
+					}
+				}
+			}
+
+			function updateDistDisplays(timeindex) {
+				var time = alltimes[timeindex];
+
+				for (query in alldata) {
+
+					if (alldata.hasOwnProperty(query) && query !== 'length' && time in alldata[query]) {
+						//console.log('updating display for ', query);
+						updateDisplay(time);
+					}
+				}
+			}
+
+			function make_structure(data) {
+				alltimes.length = 0;
+				alldata.length = 0;
+
+				for (var i = 0; i < data.objects.length; i++) {
+					var item = data.objects[i].data;
+					if (!(item.query in alldata)) {
+						alldata[item.query] = {};
+					}
+
+					var dt = new Date(item._br_timestamp);
+					if (!( dt in alldata[item.query])) {
+						alldata[item.query][dt] = item;
+						alldata[item.query][dt]['fdist'] = sortdist(item.words);
+					}
+					//var fdist = sortdist(item.words);
+					
+					alltimes.push(dt);
+				}
+
+				console.log('alldata: ', alldata);
+				console.log('alltimes: ', alltimes);
+
+				$('#slider').slider({
+					range : false,
+					min : 0,
+					max : alltimes.length - 1,
+					change : function(e, ui) {
+						var val = ui.value;
+						updateDistDisplays(ui.value);
+					},
+					slide : function(e, ui) {
+						$('#time-value').text(alltimes[ui.value]);
+					}
+				});
+			}
+			
+			$(document).ready(function() {
+				var url = 'http://platform.botrocket.com/api/v1/userdata/?format=jsonp&client_key=A11vn4qVxmHUxWQQPv7McXG8y9bxl7sJAiHf05dLFSs&bot=TwitterBot&order_by=-_br_index';
+
+				$.getJSON(url + "&callback=?", null, function(data) {
+					console.log('data: ', data);
+					make_structure(data);
+					
+					updateDisplay(alltimes[0]);
+					
+					
+				});
+			});
+		</script>
+	</head>
+
+	<body>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a>
+					<a class="brand" href="#">Project name</a>
+					<div class="nav-collapse collapse">
+						<ul class="nav">
+							<li class="active">
+								<a href="#">Home</a>
+							</li>
+							<li>
+								<a href="#about">About</a>
+							</li>
+							<li>
+								<a href="#contact">Contact</a>
+							</li>
+						</ul>
+					</div><!--/.nav-collapse -->
+				</div>
+			</div>
+		</div>
+
+		<br/>
+		<div class="container">
+			<div class="row">
+				<div id="slider"></div>
+				<span>Time: </span><strong id="time-value"></strong>
+			</div>
+		</div>
+		<hr/>
+
+		<br/>
+
+		<!--
+		<div class="container">
+		<h1>Bootstrap starter template</h1>
+		<p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
+		</div> <!-- /container -->
+
+		<div class="container">
+			<div class="row">
+				<div class="span4">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Word</th>
+								<th>Frequency</th>
+							</tr>
+						</thead>
+						<tbody class="table-body">
+							<tr class="template" style="display:none;">
+								<td class="word">myword</td>
+								<td class="frequency">10</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+
