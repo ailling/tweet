@@ -4,7 +4,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Bootstrap, from Twitter</title>
+		<title>Word count distributions of Tweets, powered by Bot Rocket</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="description" content="">
 		<meta name="author" content="">
@@ -26,7 +26,6 @@
 		<![endif]-->
 
 		<!-- Le fav and touch icons -->
-		<link rel="shortcut icon" href="../assets/ico/favicon.ico">
 		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
 		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
 		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
@@ -51,7 +50,24 @@
 
 				return sortable;
 			}
-
+			
+			function percentdist(words){
+				var p = {};
+				var maxcount = 0;
+				
+				for(var word in words){
+					if(words[word] > maxcount){
+						maxcount = words[word];
+					}
+				}
+				
+				for(var word in words){
+					p[word] = Math.round((words[word] / maxcount) * 100);
+				}
+				
+				return p;
+			}
+			
 			var alldata = {};
 			var alltimes = [];
 			
@@ -60,7 +76,7 @@
 			}
 			
 			function createTables(){
-				for(query in alldata){	
+				for(query in alldata){
 					if(alldata.hasOwnProperty(query) && query !== 'length'){
 						var table = $('.table-template')
 							.clone()
@@ -92,9 +108,11 @@
 							
 							var word = alldata[query][dt].fdist[j][0];
 							var count = alldata[query][dt].fdist[j][1];
+							var percent = alldata[query][dt].percent[word];
 							
 							$('.word', row).text(word);
 							$('.frequency', row).text(count);
+							$('.bar', row).css('width', percent + '%');
 							
 							$('.table-body', tableid).append(row);
 						}
@@ -127,8 +145,8 @@
 					if (!( dt in alldata[item.query])) {
 						alldata[item.query][dt] = item;
 						alldata[item.query][dt]['fdist'] = sortdist(item.words);
+						alldata[item.query][dt]['percent'] = percentdist(item.words);
 					}
-					//var fdist = sortdist(item.words);
 					
 					alltimes.push(dt);
 				}
@@ -148,7 +166,7 @@
 			}
 			
 			$(document).ready(function() {
-				var url = 'http://platform.botrocket.com/api/v1/userdata/?format=jsonp&client_key=A11vn4qVxmHUxWQQPv7McXG8y9bxl7sJAiHf05dLFSs&bot=TwitterBot&order_by=_br_index&_br_index__gte=256';
+				var url = 'http://platform.botrocket.com/api/v1/userdata/?format=jsonp&client_key=or3iKgf48e0KRSCHHS7jra9qWCN63ajirBZGHJkvkCI&bot=TwitterBot&order_by=_br_index';
 
 				$.getJSON(url + "&callback=?", null, function(data) {
 					make_structure(data);
@@ -161,31 +179,25 @@
 			});
 		</script>
 	</head>
-
+	
 	<body>
-		<div class="navbar navbar-inverse navbar-fixed-top">
-			<div class="navbar-inner">
-				<div class="container">
-					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a>
-					<a class="brand" href="#">Project name</a>
-					<div class="nav-collapse collapse">
-						<ul class="nav">
-							<li class="active">
-								<a href="#">Home</a>
-							</li>
-							<li>
-								<a href="#about">About</a>
-							</li>
-							<li>
-								<a href="#contact">Contact</a>
-							</li>
-						</ul>
-					</div><!--/.nav-collapse -->
+		<div class="container">
+			<div class="row">
+				<div class="span5 well">
+					You're looking at frequency distribution of words on Twitter for different
+					search terms. Move the slider to see the distribution change over time.
+				</div>
+				<div class="span4 well">
+					This data-driven web app has no backend (only front-end javascript code). It's powered by <a href="http://www.botrocket.com">Bot Rocket</a>.
+				</div>
+				<div class="span1 pull-right">
+					<a href="#">Live feed</a>
 				</div>
 			</div>
 		</div>
-
+		
 		<br/>
+		
 		<div class="container">
 			<div class="row">
 				<div id="slider"></div>
@@ -193,19 +205,13 @@
 			</div>
 		</div>
 		<hr/>
-
+		
 		<br/>
-
-		<!--
-		<div class="container">
-		<h1>Bootstrap starter template</h1>
-		<p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
-		</div> <!-- /container -->
 		
 		<div class="container">
 			<div class="row" id="data-tables">
 				
-				<div class="span4 table-template" style="display:none;">
+				<div class="span5 table-template" style="display:none;">
 					<h3 style="text-align:center;" class='table-title'></h3>
 					<table class="table table-striped">
 						<thead>
@@ -216,14 +222,18 @@
 						</thead>
 						<tbody class="table-body">
 							<tr class="row-template" style="display:none;">
-								<td class="word">myword</td>
-								<td class="frequency">10</td>
+								<td class="word span2">myword</td>
+								<td class="frequency span1">10</td>
+								<td class="progress-bar span2">
+									<div class="progress">
+									  <div class="bar" style="width: 60%;"></div>
+									</div>
+								</td>
 							</tr>
+							
 						</tbody>
 					</table>
 				</div>
-				
-				
 			</div>
 		</div>
 	</body>
