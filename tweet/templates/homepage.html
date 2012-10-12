@@ -17,9 +17,8 @@
 			}
 		</style>
 		<link href="{% static "css/bootstrap-responsive.css" %}" rel="stylesheet">
-
-		<link href="http://addyosmani.github.com/jquery-ui-bootstrap/css/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet">
-
+		
+		
 		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
 		<!--[if lt IE 9]>
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -166,7 +165,7 @@
 			}
 			
 			$(document).ready(function() {
-				var url = 'http://platform.botrocket.com/api/v1/userdata/?format=jsonp&client_key=or3iKgf48e0KRSCHHS7jra9qWCN63ajirBZGHJkvkCI&bot=TwitterBot&order_by=_br_index';
+				var url = 'http://platform.botrocket.com/api/v1/userdata/?format=jsonp&client_key=or3iKgf48e0KRSCHHS7jra9qWCN63ajirBZGHJkvkCI&bot=TwitterBot&order_by=-_br_index&limit=100';
 
 				$.getJSON(url + "&callback=?", null, function(data) {
 					make_structure(data);
@@ -191,7 +190,7 @@
 					This data-driven web app has no backend (only front-end javascript code). It's powered by <a href="http://www.botrocket.com">Bot Rocket</a>.
 				</div>
 				<div class="span1 pull-right">
-					<a href="#">Live feed</a>
+					<a href="/live/">Live feed</a>
 				</div>
 			</div>
 		</div>
