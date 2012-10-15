@@ -118,7 +118,7 @@
 					}
 				}
 			}
-
+			
 			function updateDistDisplays(timeindex) {
 				var time = alltimes[timeindex];
 
@@ -129,13 +129,18 @@
 					}
 				}
 			}
-
-			function make_structure(data) {
+			
+			function createStructures(data) {
 				alltimes.length = 0;
-				alldata.length = 0;
-
+				alldata = {};
+				var allowed = ["#democrats", "#republicans"];
+				
 				for (var i = 0; i < data.objects.length; i++) {
 					var item = data.objects[i].data;
+					if(allowed.indexOf(item.query) === -1){
+						continue;
+					}
+					
 					if (!(item.query in alldata)) {
 						alldata[item.query] = {};
 					}
@@ -166,14 +171,12 @@
 			
 			$(document).ready(function() {
 				var url = 'http://platform.botrocket.com/api/v1/userdata/?format=jsonp&client_key=or3iKgf48e0KRSCHHS7jra9qWCN63ajirBZGHJkvkCI&bot=TwitterBot&order_by=-_br_index&limit=100';
-
+				//var url = 'http://localhost:8000/api/v1/userdata/?format=jsonp&client_key=or3iKgf48e0KRSCHHS7jra9qWCN63ajirBZGHJkvkCI&bot=TwitterBot&order_by=-_br_index&limit=100';
+				
 				$.getJSON(url + "&callback=?", null, function(data) {
-					make_structure(data);
-					
+					createStructures(data);
 					createTables();
-					
 					updateDisplay(alltimes[0]);
-					
 				});
 			});
 		</script>
@@ -187,7 +190,7 @@
 					search terms. Move the slider to see the distribution change over time.
 				</div>
 				<div class="span4 well">
-					This data-driven web app has no backend (only front-end javascript code). It's powered by <a href="http://www.botrocket.com">Bot Rocket</a>.
+					This data-driven web app <strong>has no backend</strong>. It's all a JavaScript web app powered by <a href="http://www.botrocket.com">Bot Rocket</a>.
 				</div>
 				<div class="span1 pull-right">
 					<a href="/live/">Live feed</a>
